@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
 // Function to load and display active tab groups
 function loadTabGroups() {
     const container = document.getElementById('tab-groups-list');
@@ -50,9 +49,7 @@ function loadTabGroups() {
     });
 }
 
-// Helper function to render groups with search functionality
 function renderGroupsWithSearch(allGroups, container, searchInput) {
-    // Function to render groups
     function renderGroups(groupsToShow) {
         container.innerHTML = ''; // Clear the container
         
@@ -70,7 +67,6 @@ function renderGroupsWithSearch(allGroups, container, searchInput) {
             const block = document.createElement('div');
             block.className = 'item-block';
             
-            // Create a colored bar on the left edge
             const colorBar = document.createElement('div');
             colorBar.className = 'group-color-bar';
             colorBar.style.backgroundColor = group.color;
@@ -82,7 +78,6 @@ function renderGroupsWithSearch(allGroups, container, searchInput) {
             title.className = 'block-title';
             title.textContent = group.title || 'Untitled Group';
             
-            // Add a badge to show if the group is collapsed
             if (group.collapsed) {
                 const collapsedBadge = document.createElement('span');
                 collapsedBadge.className = 'collapsed-badge';
@@ -90,7 +85,6 @@ function renderGroupsWithSearch(allGroups, container, searchInput) {
                 title.appendChild(collapsedBadge);
             }
             
-            // Add a badge if this is a synthetic group (workaround for Brave)
             if (group.synthetic) {
                 const syntheticBadge = document.createElement('span');
                 syntheticBadge.className = 'collapsed-badge';
@@ -112,10 +106,8 @@ function renderGroupsWithSearch(allGroups, container, searchInput) {
         });
     }
     
-    // Initial render
     renderGroups(allGroups);
     
-    // Add search functionality
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
         
@@ -134,7 +126,6 @@ function renderGroupsWithSearch(allGroups, container, searchInput) {
 }
 
 
-// Function to load and display recent bookmarks
 function loadBookmarks() {
     const container = document.getElementById('bookmarks-list');
     const searchInput = document.getElementById('search-bookmarks');
@@ -144,7 +135,6 @@ function loadBookmarks() {
         return;
     }
     
-    // We get the 20 most recently added bookmarks
     chrome.bookmarks.getRecent(20, (bookmarks) => {
         if (bookmarks.length === 0) {
             container.innerHTML = '<div class="empty-message">No recent bookmarks.</div>';
@@ -159,7 +149,6 @@ function loadBookmarks() {
             return;
         }
         
-        // Function to render bookmarks
         function renderBookmarks(bookmarksToShow) {
             container.innerHTML = ''; // Clear container
             
@@ -179,7 +168,6 @@ function loadBookmarks() {
                 link.href = bookmark.url;
                 link.className = 'block-link';
                 
-                // Add favicon
                 const icon = document.createElement('img');
                 icon.src = `https://www.google.com/s2/favicons?domain=${bookmark.url}&sz=32`;
                 icon.className = 'block-icon';

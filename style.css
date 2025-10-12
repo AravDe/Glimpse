@@ -58,8 +58,7 @@ header h1 {
     max-width: 1200px;
     margin: 0 auto;
     height: calc(100vh - 6rem);
-    overflow-y: auto;
-}
+
 
 .container::-webkit-scrollbar {
     width: 6px;
