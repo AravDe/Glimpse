@@ -78,7 +78,6 @@ header h1 {
     background: #9d6fd8;
 }
 
-/* Card Styling - Frosted Glass Effect */
 section {
     background: rgba(30, 30, 30, 0.75);
     backdrop-filter: blur(20px) saturate(180%);
