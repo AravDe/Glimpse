@@ -1,92 +1,46 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Preserve background element
-    const gallery = document.getElementById('pinterest-gallery');
-    
-    // Clear existing content to implement file manager
-    document.body.innerHTML = '';
-    
-    // Center the container
-    document.body.style.display = 'flex';
-    document.body.style.justifyContent = 'center';
-    document.body.style.alignItems = 'center';
-    document.body.style.padding = '0';
-    
-    // Restore background
-    if (gallery) {
-        document.body.appendChild(gallery);
+    // Find the root element for the file manager using a 'js-*' hook
+    const fileManagerRoot = document.querySelector('.js-file-manager-root');
+    if (fileManagerRoot) {
+        initFileManager(fileManagerRoot);
     } else {
-        const newGallery = document.createElement('div');
-        newGallery.id = 'pinterest-gallery';
-        document.body.appendChild(newGallery);
+        console.error('File manager root element (.js-file-manager-root) not found.');
     }
-    
     loadPinterestGallery();
-    initFileManager();
 });
 
 // --- File Manager System ---
 
 let currentFolderId = '0'; // Root
 
-function initFileManager() {
+function initFileManager(rootElement) {
     const container = document.createElement('div');
     container.id = 'file-manager';
-    // Glassmorphism style container
-    container.style.cssText = `
-        position: relative;
-        z-index: 10;
-        width: 90%;
-        max-width: 1200px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        color: white;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        max-height: 80vh;
-        min-height: 300px;
-        display: flex;
-        flex-direction: column;
-    `;
+    // All styles are in style.css
     
-    // Header (Breadcrumbs + Search)
+    // Header (Breadcrumbs + Controls)
     const header = document.createElement('div');
-    header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2);';
+    header.className = 'fm-header';
     
     const breadcrumbs = document.createElement('div');
     breadcrumbs.id = 'fm-breadcrumbs';
-    breadcrumbs.style.cssText = 'display: flex; gap: 8px; align-items: center; font-size: 1.1rem; font-weight: 500;';
     
     const controls = document.createElement('div');
-    controls.style.cssText = 'display: flex; gap: 10px; align-items: center;';
+    controls.className = 'fm-controls';
 
     const newFolderBtn = document.createElement('button');
     newFolderBtn.textContent = '+ New Folder';
     newFolderBtn.className = 'fm-btn';
     newFolderBtn.onclick = handleCreateFolder;
 
-    const search = document.createElement('input');
-    search.type = 'text';
-    search.placeholder = 'Search bookmarks...';
-    search.style.cssText = `
-        background: rgba(0,0,0,0.2);
-        border: 1px solid rgba(255,255,255,0.1);
-        padding: 10px 20px;
-        border-radius: 20px;
-        color: white;
-        outline: none;
-        width: 250px;
-        transition: all 0.3s ease;
-    `;
-    search.addEventListener('focus', () => search.style.background = 'rgba(0,0,0,0.4)');
-    search.addEventListener('blur', () => search.style.background = 'rgba(0,0,0,0.2)');
-    search.addEventListener('input', (e) => handleSearch(e.target.value));
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = 'Search bookmarks...';
+    searchInput.className = 'fm-search';
+    searchInput.addEventListener('input', (e) => handleSearch(e.target.value));
 
     controls.appendChild(newFolderBtn);
-    controls.appendChild(search);
+    controls.appendChild(searchInput);
     header.appendChild(breadcrumbs);
     header.appendChild(controls);
     container.appendChild(header);
@@ -94,41 +48,6 @@ function initFileManager() {
     // Content Area (Grid)
     const content = document.createElement('div');
     content.id = 'fm-content';
-    content.style.cssText = 'flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); grid-auto-rows: min-content; gap: 20px; padding-right: 10px;';
-    
-    // Custom scrollbar styling
-    const style = document.createElement('style');
-    style.textContent = `
-        #fm-content::-webkit-scrollbar { width: 8px; }
-        #fm-content::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
-        #fm-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-        #fm-content::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
-        .fm-item { cursor: pointer; padding: 10px; border-radius: 8px; transition: background 0.2s; display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .fm-item:hover { background: rgba(255,255,255,0.1); }
-        .fm-icon { width: 48px; height: 48px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
-        .fm-title { font-size: 0.9rem; word-break: break-word; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; max-width: 100%; }
-        .fm-icon img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2)); }
-        .fm-item.drag-over { background: rgba(255, 255, 255, 0.3); transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
-        .fm-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-        .fm-btn:hover { background: rgba(255, 255, 255, 0.2); }
-        #fm-trash { position: absolute; bottom: 20px; right: 20px; width: 48px; height: 48px; background: rgba(0, 0, 0, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255, 255, 255, 0.3); transition: all 0.2s; z-index: 20; }
-        #fm-trash.drag-over { background: rgba(255, 50, 50, 0.3); border-color: #ff6b6b; transform: scale(1.1); }
-        #fm-trash img { width: 24px; height: 24px; image-rendering: pixelated; }
-        .breadcrumb-item { cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
-        .breadcrumb-item.drag-over-breadcrumb { opacity: 1; text-decoration: underline; color: #bb86fc; transform: scale(1.1); display: inline-block; }
-        .breadcrumb-item:hover { opacity: 1; text-decoration: underline; }
-        .breadcrumb-separator { opacity: 0.4; margin: 0 4px; }
-        
-        /* Context Menu */
-        #fm-context-menu { position: fixed; background: rgba(40, 40, 40, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); min-width: 180px; animation: fadeIn 0.1s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .ctx-item { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #eee; font-size: 14px; border-radius: 4px; transition: background 0.2s; }
-        .ctx-item:hover { background: rgba(255,255,255,0.1); }
-        .ctx-color-picker { -webkit-appearance: none; border: none; width: 24px; height: 24px; padding: 0; background: none; cursor: pointer; border-radius: 50%; overflow: hidden; }
-        .ctx-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
-        .ctx-color-picker::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; }
-    `;
-    document.head.appendChild(style);
     
     container.appendChild(content);
 
@@ -145,7 +64,7 @@ function initFileManager() {
     // Close context menu on click anywhere
     document.addEventListener('click', closeContextMenu);
 
-    document.body.appendChild(container);
+    rootElement.appendChild(container);
 
     loadFolder('0');
 }
@@ -193,7 +112,7 @@ function renderItems(items) {
     });
     
     if (items.length === 0) {
-        content.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; opacity: 0.6;">Folder is empty</div>';
+        content.innerHTML = '<div class="fm-empty-message">Folder is empty</div>';
         return;
     }
 

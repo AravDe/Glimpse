@@ -18,35 +18,10 @@
     </header>
 
     <main class="container">
-        <section id="tab-groups-section">
-            <div class="section-header" id = "section-header">
-                <h2><i class="fa-solid fa-layer-group"></i> All Tab Groups</h2>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <input type="text" class="search-input" id="search-tab-groups" placeholder="Search tab groups..." />
-                    <button id="refresh-tab-groups" class="refresh-btn" title="Refresh tab groups">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                </div>
-            </div>
-            <div id="tab-groups-list" class="items-container"></div>
+        <!-- This new section will contain the file manager -->
+        <section id="file-manager-section" class="js-file-manager-root">
+            <!-- The file manager will be built here by script.js -->
         </section>
-        
-        <section id="bookmarks-section">
-            <div class="section-header" id = "section-header">
-                <h2><i class="fa-solid fa-book-bookmark"></i> Recent Bookmarks</h2>
-                <input type="text" class="search-input" id="search-bookmarks" placeholder="Search bookmarks..." />
-            </div>
-            <div id="bookmarks-list" class="items-container"></div>
-        </section>
-
-        <section id="history-section">
-            <div class="section-header" id = "section-header">
-                <h2><i class="fa-solid fa-clock-rotate-left"></i> Recently Visited</h2>
-                <input type="text" class="search-input" id="search-history" placeholder="Search history..." />
-            </div>
-            <div id="history-list" class="items-container"></div>
-        </section>
-    </main>
 
     <script src="script.js"></script>
 </body>
