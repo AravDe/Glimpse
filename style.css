@@ -54,6 +54,24 @@ header {
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
+/* Make the user name part clickable */
+#user-name {
+    cursor: pointer;
+    display: inline-block; /* Allows for better positioning of the input */
+    min-width: 1px; /* Prevents collapsing when empty before input is added */
+}
+
+/* Style for the inline name editor */
+.greeting-name-edit {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit; /* Ensure spacing matches the h1 */
+    color: inherit;
+    background: none;
+    border: none;
+    outline: none;
+}
 #datetime-container {
     text-align: center;
     color: var(--header-color);

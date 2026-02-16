@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPinterestGallery();
     createVisibilityToggleButton();
     initClock();
+    initGreetingEditor();
 
     const collectionsBtn = document.getElementById('collections-btn');
     if (collectionsBtn) {
@@ -41,6 +42,51 @@ function initClock() {
 
     updateTime(); // Initial call to display time immediately
     setInterval(updateTime, 1000); // Update every second
+}
+
+function initGreetingEditor() {
+    const nameSpan = document.getElementById('user-name');
+    if (!nameSpan) return;
+
+    // Load name from localStorage or use default
+    const savedName = localStorage.getItem('userName');
+    if (savedName) {
+        nameSpan.textContent = savedName;
+    }
+
+    nameSpan.addEventListener('click', () => {
+        // Prevent creating multiple inputs
+        if (nameSpan.querySelector('input')) return;
+
+        const currentName = nameSpan.textContent;
+        nameSpan.innerHTML = ''; // Clear the span
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentName;
+        input.className = 'greeting-name-edit';
+
+        const saveName = () => {
+            const newName = input.value.trim();
+            if (newName && newName !== currentName) {
+                localStorage.setItem('userName', newName);
+                nameSpan.textContent = newName;
+            } else {
+                // If empty or unchanged, revert to original
+                nameSpan.textContent = currentName;
+            }
+        };
+
+        input.addEventListener('blur', saveName);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') input.blur(); // Save on Enter
+            if (e.key === 'Escape') nameSpan.textContent = currentName; // Cancel on Escape
+        });
+
+        nameSpan.appendChild(input);
+        input.focus();
+        input.select();
+    });
 }
 
 function createVisibilityToggleButton() {
