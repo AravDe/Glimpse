@@ -1,11 +1,22 @@
 :root {
+    /* Dark Mode (Default) */
     --bg-color: #121212;
-    --card-color: #1e1e1e;
-    --border-color: #333333;
     --text-color: #e0e0e0;
     --text-muted-color: #999999;
     --header-color: #ffffff;
     --accent-color: #bb86fc;
+    --glass-bg: rgba(30, 30, 30, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: rgba(0, 0, 0, 0.6);
+    --item-bg: rgba(255, 255, 255, 0.05);
+    --item-hover-bg: rgba(255, 255, 255, 0.1);
+    --btn-bg: rgba(255, 255, 255, 0.1);
+    --btn-hover-bg: rgba(255, 255, 255, 0.2);
+    --search-bg: rgba(0, 0, 0, 0.2);
+    --search-focus-bg: rgba(0, 0, 0, 0.4);
+    --trash-bg: rgba(0, 0, 0, 0.2);
+    --trash-hover-bg: rgba(255, 50, 50, 0.3);
+    --ctx-menu-bg: rgba(40, 40, 40, 0.95);
 }
 
 body {
@@ -18,6 +29,25 @@ body {
     display: flex;
     flex-direction: column;
     padding: 1rem;
+}
+
+body.light-mode {
+    --text-color: #1a1a1a;
+    --text-muted-color: #555555;
+    --header-color: #000000;
+    --accent-color: #6a11cb;
+    --glass-bg: rgba(255, 255, 255, 0.4);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --glass-shadow: rgba(0, 0, 0, 0.1);
+    --item-bg: rgba(0, 0, 0, 0.03);
+    --item-hover-bg: rgba(0, 0, 0, 0.06);
+    --btn-bg: rgba(0, 0, 0, 0.05);
+    --btn-hover-bg: rgba(0, 0, 0, 0.1);
+    --search-bg: rgba(255, 255, 255, 0.5);
+    --search-focus-bg: rgba(255, 255, 255, 0.7);
+    --trash-bg: rgba(255, 255, 255, 0.5);
+    --trash-hover-bg: rgba(255, 50, 50, 0.3);
+    --ctx-menu-bg: rgba(250, 250, 250, 0.95);
 }
 
 #pinterest-gallery {
@@ -121,14 +151,14 @@ header {
 }
 
 section {
-    background: rgba(30, 30, 30, 0.75);
+    background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-radius: 16px;
     padding: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--glass-border);
     transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 8px 32px var(--glass-shadow);
     flex-shrink: 0;
 }
 
@@ -170,10 +200,10 @@ h2 .fa-solid {
     width: 100%;
     max-width: 300px;
     padding: 0.5rem 0.75rem;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--item-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--glass-border);
     border-radius: 8px;
     color: var(--text-color);
     font-family: 'Poppins', sans-serif;
@@ -188,7 +218,7 @@ h2 .fa-solid {
 }
 
 .search-input:focus {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--item-hover-bg);
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.15);
 }
@@ -229,10 +259,10 @@ h2 .fa-solid {
 .item-block {
     min-width: 200px;
     max-width: 250px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--item-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
     border-radius: 10px;
     padding: 1rem;
     transition: all 0.3s ease;
@@ -242,7 +272,7 @@ h2 .fa-solid {
 }
 
 .item-block:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--item-hover-bg);
     border-color: var(--accent-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(187, 134, 252, 0.3);
@@ -328,8 +358,8 @@ h2 .fa-solid {
 
 Refresh Button
 .refresh-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--btn-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 8px;
     color: var(--text-color);
     cursor: pointer;
@@ -342,7 +372,7 @@ Refresh Button
 }
 
 .refresh-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--item-hover-bg);
     border-color: var(--accent-color);
     color: var(--accent-color);
     transform: rotate(90deg);
@@ -363,7 +393,7 @@ Refresh Button
     /* The parent <section> now provides the glassmorphism background and padding */
     /* We remove redundant styles from the file manager itself */
     width: 100%;
-    color: white;
+    color: var(--header-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     max-height: 80vh;
     min-height: 300px;
@@ -385,7 +415,7 @@ Refresh Button
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid var(--glass-border);
 }
 
 #fm-breadcrumbs {
@@ -403,18 +433,18 @@ Refresh Button
 }
 
 .fm-search {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--search-bg);
+    border: 1px solid var(--glass-border);
     padding: 10px 20px;
     border-radius: 20px;
-    color: white;
+    color: var(--text-color);
     outline: none;
     width: 250px;
     transition: all 0.3s ease;
 }
 
 .fm-search:focus {
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--search-focus-bg);
 }
 
 #fm-content {
@@ -442,17 +472,18 @@ Refresh Button
 
 /* Items */
 .fm-item { cursor: pointer; padding: 10px; border-radius: 8px; transition: background 0.2s; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.fm-item:hover { background: rgba(255,255,255,0.1); }
+.fm-item:hover { background: var(--item-hover-bg); }
 .fm-icon { width: 48px; height: 48px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
 .fm-title { font-size: 0.9rem; word-break: break-word; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; max-width: 100%; }
 .fm-icon img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2)); }
 .fm-item.drag-over { background: rgba(255, 255, 255, 0.3); transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
-.fm-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-.fm-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.fm-btn { background: var(--btn-bg); border: 1px solid var(--glass-border); color: var(--text-color); padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.fm-btn:hover { background: var(--btn-hover-bg); }
 
 /* Trash */
-#fm-trash { position: absolute; bottom: 20px; right: 20px; width: 48px; height: 48px; background: rgba(0, 0, 0, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255, 255, 255, 0.3); transition: all 0.2s; z-index: 20; }
-#fm-trash.drag-over { background: rgba(255, 50, 50, 0.3); border-color: #ff6b6b; transform: scale(1.1); }
+#fm-trash { position: absolute; bottom: 20px; right: 20px; width: 48px; height: 48px; background: var(--trash-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255, 255, 255, 0.3); transition: all 0.2s; z-index: 20; }
+body.light-mode #fm-trash { border: 2px dashed rgba(0, 0, 0, 0.3); }
+#fm-trash.drag-over { background: var(--trash-hover-bg); border-color: #ff6b6b; transform: scale(1.1); }
 #fm-trash img { width: 24px; height: 24px; image-rendering: pixelated; }
 
 /* Breadcrumbs */
@@ -462,26 +493,33 @@ Refresh Button
 .breadcrumb-separator { opacity: 0.4; margin: 0 4px; }
 
 /* Context Menu */
-#fm-context-menu { position: fixed; background: rgba(40, 40, 40, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); min-width: 180px; animation: fadeIn 0.1s ease; }
+#fm-context-menu { position: fixed; background: var(--ctx-menu-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); min-width: 180px; animation: fadeIn 0.1s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-.ctx-item { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #eee; font-size: 14px; border-radius: 4px; transition: background 0.2s; }
-.ctx-item:hover { background: rgba(255,255,255,0.1); }
+.ctx-item { padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: var(--text-color); font-size: 14px; border-radius: 4px; transition: background 0.2s; }
+.ctx-item:hover { background: var(--item-hover-bg); }
 .ctx-color-picker { -webkit-appearance: none; border: none; width: 24px; height: 24px; padding: 0; background: none; cursor: pointer; border-radius: 50%; overflow: hidden; }
 .ctx-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
 .ctx-color-picker::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; }
+body.light-mode .ctx-color-picker::-webkit-color-swatch { border: 2px solid rgba(0,0,0,0.2); }
 
-/* Visibility Toggle Button */
-#toggle-fm-btn {
+/* Header Toggles Container */
+#header-toggles {
     position: fixed;
     top: 20px;
     left: 20px;
     z-index: 1001;
+    display: flex;
+    gap: 10px;
+}
+
+/* Individual Toggle Button */
+.header-toggle-btn {
     width: 48px;
     height: 48px;
-    background: rgba(30, 30, 30, 0.75);
+    background: var(--glass-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--glass-border);
     border-radius: 16px;
     color: var(--text-color);
     cursor: pointer;
@@ -489,10 +527,10 @@ Refresh Button
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 8px 32px var(--glass-shadow);
 }
 
-#toggle-fm-btn:hover {
+.header-toggle-btn:hover {
     border-color: rgba(187, 134, 252, 0.3);
     transform: scale(1.1);
 }
@@ -503,24 +541,26 @@ Refresh Button
     position: absolute;
     top: 1rem;
     right: 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
     color: var(--text-color);
     cursor: pointer;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.25rem;
     font-size: 0.9rem;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-family: 'Poppins', sans-serif;
+    box-shadow: 0 8px 32px var(--glass-shadow);
 }
 
 .header-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: var(--accent-color);
-    color: var(--accent-color);
+    border-color: rgba(187, 134, 252, 0.3);
+    transform: scale(1.05);
 }
 
 #collections-panel {
@@ -541,9 +581,9 @@ Refresh Button
 .collections-modal {
     width: 90%;
     max-width: 600px;
-    background: rgba(30, 30, 30, 0.85);
+    background: var(--glass-bg);
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--glass-border);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     display: flex;
     flex-direction: column;
@@ -555,7 +595,7 @@ Refresh Button
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--glass-border);
 }
 
 .collections-header h2 {
@@ -588,7 +628,7 @@ Refresh Button
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--item-bg);
     border-radius: 8px;
     margin-bottom: 1rem;
     cursor: pointer;
@@ -596,7 +636,7 @@ Refresh Button
 }
 
 .collection-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--item-hover-bg);
 }
 
 .collection-item.active {
@@ -629,7 +669,7 @@ Refresh Button
 
 .collections-footer {
     padding: 1rem 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--glass-border);
 }
 
 #add-collection-btn {
