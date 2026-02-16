@@ -13,9 +13,11 @@ body {
     color: var(--text-color);
     font-family: 'Poppins', sans-serif; /* Using our new font */
     margin: 0;
-    padding: 1rem;
     overflow: hidden;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
 }
 
 #pinterest-gallery {
@@ -37,13 +39,14 @@ body {
 }
 
 header {
+    position: relative; /* Establish positioning context for the button */
     text-align: center;
     margin-bottom: 1rem;
-    border-radius: 16px;
     padding: 1rem;
 }
 
-header h1 {
+/* The greeting is now targeted by ID to not conflict with other h1s */
+#greeting {
     font-size: 1.8rem;
     color: var(--header-color);
     font-weight: 600;
@@ -51,14 +54,35 @@ header h1 {
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
+#datetime-container {
+    text-align: center;
+    color: var(--header-color);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+    margin-bottom: 1rem;
+}
+
+#time {
+    font-size: 4.5rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+#date {
+    font-size: 1.2rem;
+    opacity: 0.85;
+}
+
 .container {
     display: flex;
     flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    align-items: center;    /* Center content horizontally */
     gap: 1rem;
     max-width: 1200px;
     margin: 0 auto;
-    height: calc(100vh - 6rem);
-
+    flex-grow: 1; /* Allow the container to fill available space */
+    width: 100%;
+}
 
 .container::-webkit-scrollbar {
     width: 6px;
@@ -333,6 +357,8 @@ Refresh Button
     /* This ensures the file manager section has a title like the others */
     display: flex;
     flex-direction: column;
+    width: 90%; /* Define a specific width */
+    max-width: 1200px; /* Ensure it doesn't get too wide on large screens */
 }
 
 .fm-header {
@@ -425,3 +451,170 @@ Refresh Button
 .ctx-color-picker { -webkit-appearance: none; border: none; width: 24px; height: 24px; padding: 0; background: none; cursor: pointer; border-radius: 50%; overflow: hidden; }
 .ctx-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
 .ctx-color-picker::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; }
+
+/* Visibility Toggle Button */
+#toggle-fm-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    width: 48px;
+    height: 48px;
+    background: rgba(30, 30, 30, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+#toggle-fm-btn:hover {
+    border-color: rgba(187, 134, 252, 0.3);
+    transform: scale(1.1);
+}
+
+/* --- Collections UI --- */
+
+.header-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.header-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+#collections-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.collections-modal {
+    width: 90%;
+    max-width: 600px;
+    background: rgba(30, 30, 30, 0.85);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+}
+
+.collections-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.collections-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+#close-collections-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted-color);
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+
+#close-collections-btn:hover {
+    color: var(--text-color);
+    transform: scale(1.1);
+}
+
+.collections-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.collection-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.collection-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.collection-item.active {
+    background: rgba(187, 134, 252, 0.2);
+    border-left: 4px solid var(--accent-color);
+    padding-left: calc(1rem - 4px);
+}
+
+.collection-name {
+    font-weight: 500;
+}
+
+.collection-controls button {
+    background: none;
+    border: none;
+    color: var(--text-muted-color);
+    cursor: pointer;
+    margin-left: 0.5rem;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.collection-controls button:hover {
+    color: var(--accent-color);
+}
+
+.collection-controls .delete-collection-btn:hover {
+    color: #ff6b6b;
+}
+
+.collections-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#add-collection-btn {
+    width: 100%;
+    padding: 0.75rem;
+}

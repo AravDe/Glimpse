@@ -7,7 +7,64 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('File manager root element (.js-file-manager-root) not found.');
     }
     loadPinterestGallery();
+    createVisibilityToggleButton();
+    initClock();
+
+    const collectionsBtn = document.getElementById('collections-btn');
+    if (collectionsBtn) {
+        collectionsBtn.addEventListener('click', openCollectionsPanel);
+    }
 });
+
+function initClock() {
+    const timeEl = document.getElementById('time');
+    const dateEl = document.getElementById('date');
+
+    if (!timeEl || !dateEl) {
+        console.error('Time or date element not found in the DOM.');
+        return;
+    }
+
+    function updateTime() {
+        const now = new Date();
+
+        // Format time as HH:MM:SS
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        timeEl.textContent = `${hours}:${minutes}:${seconds}`;
+
+        // Format date as "Weekday, Month Day, Year"
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateEl.textContent = now.toLocaleDateString(undefined, dateOptions);
+    }
+
+    updateTime(); // Initial call to display time immediately
+    setInterval(updateTime, 1000); // Update every second
+}
+
+function createVisibilityToggleButton() {
+    const toggleBtn = document.createElement('button');
+    toggleBtn.id = 'toggle-fm-btn';
+    toggleBtn.title = 'Hide Bookmarks';
+
+    const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const eyeOffIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+    toggleBtn.innerHTML = eyeIcon;
+
+    toggleBtn.addEventListener('click', () => {
+        const fmSection = document.getElementById('file-manager-section');
+        if (fmSection) {
+            const isVisible = fmSection.style.display !== 'none';
+            fmSection.style.display = isVisible ? 'none' : 'flex';
+            toggleBtn.innerHTML = isVisible ? eyeOffIcon : eyeIcon;
+            toggleBtn.title = isVisible ? 'Show Bookmarks' : 'Hide Bookmarks';
+        }
+    });
+
+    document.body.appendChild(toggleBtn);
+}
 
 // --- File Manager System ---
 
@@ -379,23 +436,20 @@ function loadPinterestGallery() {
     const gallery = document.getElementById('pinterest-gallery');
     if (!gallery) return;
     
-    const pinterestImages = [
+    const collectionsData = getCollections();
+    const activeCollectionKey = collectionsData.active;
+    const imageList = collectionsData.collections[activeCollectionKey] || [];
 
-            'https://i.pinimg.com/1200x/bb/b4/e2/bbb4e2ccf50d3daa72f62bbe9473f283.jpg',
-            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&h=1080&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&h=1080&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1920&h=1080&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&h=1080&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&h=1080&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=1920&h=1080&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1920&h=1080&fit=crop&q=80',
-    ];
+    gallery.innerHTML = ''; // Clear previous background image
+
+    if (imageList.length === 0) {
+        console.warn(`Active collection "${activeCollectionKey}" is empty. Using gradient fallback.`);
+        gallery.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        return;
+    }
     
     // Pick a random image
-    const randomImage = pinterestImages[Math.floor(Math.random() * pinterestImages.length)];
+    const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
     
     // Create single full-size background image
     const img = document.createElement('img');
@@ -414,4 +468,172 @@ function loadPinterestGallery() {
     };
     
     gallery.appendChild(img);
+}
+
+function handleImageUpload(collectionKey) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = (e) => {
+        const files = e.target.files;
+        for (const file of files) {
+            const reader = new FileReader();
+            reader.onload = (event) => addImageToCollection(collectionKey, event.target.result);
+            reader.readAsDataURL(file);
+        }
+    };
+    input.click();
+}
+// --- Collections System ---
+
+const MAX_COLLECTIONS = 10;
+
+function getCollections() {
+    const defaults = {
+        active: 'original',
+        collections: {
+            original: [
+                'https://i.pinimg.com/1200x/bb/b4/e2/bbb4e2ccf50d3daa72f62bbe9473f283.jpg',
+                'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&h=1080&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&h=1080&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1920&h=1080&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&h=1080&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&h=1080&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=1920&h=1080&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1920&h=1080&fit=crop&q=80',
+            ]
+        }
+    };
+    const stored = localStorage.getItem('imageCollections');
+    return stored ? JSON.parse(stored) : defaults;
+}
+
+function saveCollections(data) {
+    localStorage.setItem('imageCollections', JSON.stringify(data));
+}
+
+function openCollectionsPanel() {
+    if (document.getElementById('collections-panel')) return;
+
+    const panel = document.createElement('div');
+    panel.id = 'collections-panel';
+    panel.innerHTML = `
+        <div class="collections-modal">
+            <div class="collections-header">
+                <h2>Image Collections</h2>
+                <button id="close-collections-btn">&times;</button>
+            </div>
+            <div class="collections-body"></div>
+            <div class="collections-footer">
+                <button id="add-collection-btn" class="fm-btn">+ Add New Collection</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(panel);
+    renderCollectionsList();
+
+    panel.querySelector('#close-collections-btn').addEventListener('click', () => panel.remove());
+    panel.querySelector('#add-collection-btn').addEventListener('click', handleAddCollection);
+    panel.addEventListener('click', (e) => {
+        if (e.target.id === 'collections-panel') panel.remove();
+    });
+}
+
+function renderCollectionsList() {
+    const body = document.querySelector('.collections-body');
+    if (!body) return;
+
+    const data = getCollections();
+    body.innerHTML = '';
+
+    Object.keys(data.collections).forEach(key => {
+        const item = document.createElement('div');
+        item.className = 'collection-item';
+        item.dataset.key = key;
+        if (data.active === key) {
+            item.classList.add('active');
+        }
+
+        let controls = '';
+        if (key !== 'original') {
+            controls = `
+                <div class="collection-controls">
+                    <button class="upload-to-collection-btn" title="Add Images"><i class="fa-solid fa-upload"></i></button>
+                    <button class="delete-collection-btn" title="Delete Collection"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `;
+        }
+
+        item.innerHTML = `<span class="collection-name">${key}</span> ${controls}`;
+        body.appendChild(item);
+    });
+
+    // Add event listeners after rendering
+    body.querySelectorAll('.collection-item').forEach(el => {
+        el.addEventListener('click', (e) => {
+            if (e.target.closest('.collection-controls')) return;
+            const key = el.dataset.key;
+            const data = getCollections();
+            data.active = key;
+            saveCollections(data);
+            renderCollectionsList();
+            loadPinterestGallery(); // Reload background
+        });
+    });
+    
+    body.querySelectorAll('.delete-collection-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const key = e.target.closest('.collection-item').dataset.key;
+            if (confirm(`Are you sure you want to delete the "${key}" collection?`)) {
+                const data = getCollections();
+                delete data.collections[key];
+                if (data.active === key) {
+                    data.active = 'original'; // Fallback to original
+                }
+                saveCollections(data);
+                renderCollectionsList();
+                loadPinterestGallery();
+            }
+        });
+    });
+    
+    // Note: Upload functionality is complex and requires a file input handler.
+    // This is a placeholder for where that logic would go.
+    body.querySelectorAll('.upload-to-collection-btn').forEach(btn => {
+        const key = btn.closest('.collection-item').dataset.key;
+        btn.addEventListener('click', () => handleImageUpload(key));
+    });
+}
+
+function handleAddCollection() {
+    const data = getCollections();
+    if (Object.keys(data.collections).length >= MAX_COLLECTIONS) {
+        alert(`You can only have a maximum of ${MAX_COLLECTIONS} collections.`);
+        return;
+    }
+    const name = prompt('Enter new collection name:');
+    if (name && !data.collections[name]) {
+        data.collections[name] = [];
+        saveCollections(data);
+        renderCollectionsList();
+    } else if (name) {
+        alert('A collection with this name already exists.');
+    }
+}
+
+function addImageToCollection(key, imageDataUrl) {
+    const data = getCollections();
+    if (data.collections[key]) {
+        data.collections[key].push(imageDataUrl);
+        saveCollections(data);
+        // If the updated collection is the active one, reload the background to potentially show the new image
+        if (data.active === key) {
+            loadPinterestGallery();
+        }
+    }
 }

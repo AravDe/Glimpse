@@ -1,4 +1,4 @@
-# Custom HTML Page - Browser Extension
+# CustomBrowserHomepage - Browser Extension
 
 A Chrome/Brave browser extension that replaces the new tab page with a beautiful and functional bookmark manager.
 
