@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     createHeaderToggles();
     initClock();
     initGreetingEditor();
+    initTopSites();
 
     const collectionsBtn = document.getElementById('collections-btn');
     if (collectionsBtn) {
@@ -32,8 +33,7 @@ function initClock() {
         // Format time as HH:MM:SS
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        timeEl.textContent = `${hours}:${minutes}:${seconds}`;
+        timeEl.textContent = `${hours}:${minutes}`;
 
         // Format date as "Weekday, Month Day, Year"
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -86,6 +86,43 @@ function initGreetingEditor() {
         nameSpan.appendChild(input);
         input.focus();
         input.select();
+    });
+}
+
+function initTopSites() {
+    const container = document.getElementById('top-sites-container');
+    if (!container) return;
+
+    // The topSites API is asynchronous
+    chrome.topSites.get((sites) => {
+        // Display up to 8 of the most visited sites
+        sites.slice(0, 8).forEach(site => {
+            const siteEl = document.createElement('a');
+            siteEl.className = 'top-site-item';
+            siteEl.href = site.url;
+            siteEl.title = site.title;
+
+            const icon = document.createElement('div');
+            icon.className = 'top-site-icon';
+            
+            const img = document.createElement('img');
+            img.src = `https://www.google.com/s2/favicons?domain=${site.url}&sz=64`;
+            // Fallback for sites without a favicon
+            img.onerror = () => {
+                icon.textContent = site.title.charAt(0).toUpperCase();
+                icon.style.backgroundColor = 'rgba(0,0,0,0.3)';
+                img.remove();
+            };
+
+            const title = document.createElement('span');
+            title.className = 'top-site-title';
+            title.textContent = site.title;
+
+            icon.appendChild(img);
+            siteEl.appendChild(icon);
+            siteEl.appendChild(title);
+            container.appendChild(siteEl);
+        });
     });
 }
 
@@ -567,7 +604,7 @@ function handleImageUpload(collectionKey) {
 }
 // --- Collections System ---
 
-const MAX_COLLECTIONS = 10;
+const MAX_COLLECTIONS = 100000;
 
 function getCollections() {
     const defaults = {
