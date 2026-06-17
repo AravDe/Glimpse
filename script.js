@@ -1,3 +1,7 @@
+const DB_NAME = 'HomepageDB'
+const STORE_NAME = 'collections'
+const MAX_IMAGES_PER_COLLECTION = 10
+
 document.addEventListener('DOMContentLoaded', () => {
     // Find the root element for the file manager using a 'js-*' hook
     const fileManagerRoot = document.querySelector('.js-file-manager-root');
@@ -17,6 +21,87 @@ document.addEventListener('DOMContentLoaded', () => {
         collectionsBtn.addEventListener('click', openCollectionsPanel);
     }
 });
+
+
+function initDb() {
+    return new Promise((res, rej) => {
+        const request = indexedDB.open(DB_NAME, 1)
+
+        request.onupgradeneeded = (e) => {
+            e.target.result.createObjectStore(STORE_NAME, { keyPath: 'name' })
+        }
+
+        request.onsuccess = (e) => { res(e.target.result) }
+
+        request.onerror = (e) => { rej(e.target.error) }
+    });
+}
+
+async function getCollectionFromDb(collectionName) {
+    const db = await initDb()
+
+    return new Promise((res, rej) => {
+        const transaction = db.transaction([STORE_NAME], "readonly")
+        const store = transaction.objectStore(STORE_NAME)
+        const request = store.get(collectionName)
+
+        request.onsuccess = (e) => { res(e.target.result) }
+        request.onerror = (e) => { rej(e.target.error) }
+    })
+}
+
+async function saveCollectionToDb(collectionObj) {
+    const db = await initDb()
+
+    return new Promise((res, rej) => {
+        const transaction = db.transaction([STORE_NAME], "readwrite")
+        const store = transaction.objectStore(STORE_NAME)
+        store.put(collectionObj)
+
+        transaction.oncomplete = () => { res() }
+        transaction.onerror = (e) => { rej(e.target.error) }
+    })
+}
+
+async function deleteCollectionFromDb(collectionName) {
+    const db = await initDb()
+
+    return new Promise((res, rej) => {
+        const request = db
+            .transaction([STORE_NAME], "readwrite")
+            .objectStore(STORE_NAME)
+            .delete(collectionName)
+
+        request.onsuccess = (e) => { res(e.target.result) }
+        request.onerror = (e) => { rej(e.target.error) }
+    })
+}
+
+async function handleImageUpload(collectionKey) {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.multiple = true
+
+    input.onchange = async (e) => {
+
+        const collection = await getCollectionFromDb(collectionKey)
+        const files = e.target.files
+
+        if (collection.blobs.length + files.length > MAX_IMAGES_PER_COLLECTION) {
+            alert('Too many images!')
+            return
+        }
+
+        for (const file of files) {
+            collection.blobs.push(file)
+        }
+
+        await saveCollectionToDb(collection)
+    }
+
+    input.click()
+}
 
 function initClock() {
     const timeEl = document.getElementById('time');
@@ -104,7 +189,7 @@ function initTopSites() {
 
             const icon = document.createElement('div');
             icon.className = 'top-site-icon';
-            
+
             const img = document.createElement('img');
             img.src = `https://www.google.com/s2/favicons?domain=${site.url}&sz=64`;
             // Fallback for sites without a favicon
@@ -129,16 +214,16 @@ function initTopSites() {
 function createHeaderToggles() {
     const container = document.createElement('div');
     container.id = 'header-toggles';
-    
+
     // --- Visibility Toggle ---
     const visibilityBtn = document.createElement('button');
     visibilityBtn.className = 'header-toggle-btn';
     visibilityBtn.title = 'Hide Bookmarks';
-    
+
     const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
     const eyeOffIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
     visibilityBtn.innerHTML = eyeIcon;
-    
+
     visibilityBtn.addEventListener('click', () => {
         const fmSection = document.getElementById('file-manager-section');
         if (fmSection) {
@@ -153,7 +238,7 @@ function createHeaderToggles() {
     // --- Theme Toggle ---
     const themeBtn = document.createElement('button');
     themeBtn.className = 'header-toggle-btn';
-    
+
     const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
     const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
 
@@ -191,14 +276,14 @@ function initFileManager(rootElement) {
     const container = document.createElement('div');
     container.id = 'file-manager';
     // All styles are in style.css
-    
+
     // Header (Breadcrumbs + Controls)
     const header = document.createElement('div');
     header.className = 'fm-header';
-    
+
     const breadcrumbs = document.createElement('div');
     breadcrumbs.id = 'fm-breadcrumbs';
-    
+
     const controls = document.createElement('div');
     controls.className = 'fm-controls';
 
@@ -222,7 +307,7 @@ function initFileManager(rootElement) {
     // Content Area (Grid)
     const content = document.createElement('div');
     content.id = 'fm-content';
-    
+
     container.appendChild(content);
 
     // Trash Can
@@ -247,15 +332,15 @@ function loadFolder(folderId) {
     currentFolderId = folderId;
     const content = document.getElementById('fm-content');
     content.innerHTML = '';
-    
+
     if (folderId === '0') {
         // Flatten root: Combine contents of "Bookmarks Bar", "Other Bookmarks", etc.
         chrome.bookmarks.getChildren('0', (roots) => {
             let allItems = [];
             let pending = roots.length;
-            
+
             if (pending === 0) return renderItems([]);
-            
+
             roots.forEach(root => {
                 chrome.bookmarks.getChildren(root.id, (children) => {
                     allItems = allItems.concat(children);
@@ -275,7 +360,7 @@ function loadFolder(folderId) {
 function renderItems(items) {
     const content = document.getElementById('fm-content');
     content.innerHTML = '';
-    
+
     // Sort: Folders first, then bookmarks
     items.sort((a, b) => {
         const aIsFolder = !a.url;
@@ -284,7 +369,7 @@ function renderItems(items) {
         if (!aIsFolder && bIsFolder) return 1;
         return 0;
     });
-    
+
     if (items.length === 0) {
         content.innerHTML = '<div class="fm-empty-message">Folder is empty</div>';
         return;
@@ -293,20 +378,20 @@ function renderItems(items) {
     items.forEach(item => {
         const el = document.createElement('div');
         el.className = 'fm-item';
-        
+
         const icon = document.createElement('div');
         icon.className = 'fm-icon';
-        
+
         if (item.url) {
             // Bookmark
             const img = document.createElement('img');
             img.src = `https://www.google.com/s2/favicons?domain=${item.url}&sz=64`;
-            img.onerror = () => { 
+            img.onerror = () => {
                 // Retro file fallback
-                img.src = 'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" shape-rendering="crispEdges"><path d="M4 2h10l6 6v14H4V2z" fill="%23FFF" stroke="%23000" stroke-width="2"/><path d="M14 2v6h6" fill="none" stroke="%23000" stroke-width="2"/><path d="M8 12h8M8 16h8M8 20h5" stroke="%23000" stroke-width="2"/></svg>'; 
+                img.src = 'data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" shape-rendering="crispEdges"><path d="M4 2h10l6 6v14H4V2z" fill="%23FFF" stroke="%23000" stroke-width="2"/><path d="M14 2v6h6" fill="none" stroke="%23000" stroke-width="2"/><path d="M8 12h8M8 16h8M8 20h5" stroke="%23000" stroke-width="2"/></svg>';
             };
             icon.appendChild(img);
-            
+
             el.addEventListener('click', () => window.location.href = item.url);
             el.title = item.url;
         } else {
@@ -321,18 +406,18 @@ function renderItems(items) {
             el.addEventListener('click', () => loadFolder(item.id));
             el.addEventListener('contextmenu', (e) => handleContextMenu(e, item));
         }
-        
+
         // Drag and Drop
         el.draggable = true;
         el.addEventListener('dragstart', (e) => handleDragStart(e, item));
         el.addEventListener('dragover', (e) => handleDragOver(e));
         el.addEventListener('dragleave', (e) => handleDragLeave(e));
         el.addEventListener('drop', (e) => handleDrop(e, item));
-        
+
         const title = document.createElement('div');
         title.className = 'fm-title';
         title.textContent = item.title;
-        
+
         el.appendChild(icon);
         el.appendChild(title);
         content.appendChild(el);
@@ -342,11 +427,11 @@ function renderItems(items) {
 function updateBreadcrumbs(folderId) {
     const container = document.getElementById('fm-breadcrumbs');
     container.innerHTML = '';
-    
+
     // Helper to build path recursively
     const buildPath = (id, path = []) => {
         if (id === '0') {
-            renderBreadcrumbPath([{id: '0', title: 'Home'}, ...path]);
+            renderBreadcrumbPath([{ id: '0', title: 'Home' }, ...path]);
             return;
         }
         chrome.bookmarks.get(id, (results) => {
@@ -356,31 +441,31 @@ function updateBreadcrumbs(folderId) {
             }
         });
     };
-    
+
     buildPath(folderId);
 }
 
 function renderBreadcrumbPath(pathItems) {
     const container = document.getElementById('fm-breadcrumbs');
     container.innerHTML = '';
-    
+
     pathItems.forEach((item, index) => {
         const span = document.createElement('span');
         span.className = 'breadcrumb-item';
         span.textContent = item.title || 'Root';
         span.onclick = () => loadFolder(item.id);
-        
+
         // Allow dropping on breadcrumbs to move items to parent folders
         span.addEventListener('dragover', (e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
             span.classList.add('drag-over-breadcrumb');
         });
-        
+
         span.addEventListener('dragleave', () => {
             span.classList.remove('drag-over-breadcrumb');
         });
-        
+
         span.addEventListener('drop', (e) => {
             e.preventDefault();
             span.classList.remove('drag-over-breadcrumb');
@@ -389,9 +474,9 @@ function renderBreadcrumbPath(pathItems) {
                 chrome.bookmarks.move(draggedId, { parentId: item.id }, () => loadFolder(currentFolderId));
             }
         });
-        
+
         container.appendChild(span);
-        
+
         if (index < pathItems.length - 1) {
             const sep = document.createElement('span');
             sep.className = 'breadcrumb-separator';
@@ -404,14 +489,14 @@ function renderBreadcrumbPath(pathItems) {
 function handleSearch(query) {
     const content = document.getElementById('fm-content');
     const breadcrumbs = document.getElementById('fm-breadcrumbs');
-    
+
     if (!query) {
         loadFolder(currentFolderId);
         return;
     }
-    
+
     breadcrumbs.innerHTML = '<span class="breadcrumb-item">Search Results</span>';
-    
+
     chrome.bookmarks.search(query, (results) => {
         renderItems(results);
     });
@@ -438,7 +523,7 @@ function handleDrop(e, targetItem) {
     e.preventDefault();
     e.currentTarget.classList.remove('drag-over');
     const draggedId = e.dataTransfer.getData('text/plain');
-    
+
     if (draggedId === targetItem.id) return;
 
     if (!targetItem.url) {
@@ -496,31 +581,31 @@ function closeContextMenu() {
 function handleContextMenu(e, item) {
     e.preventDefault();
     closeContextMenu();
-    
+
     const menu = document.createElement('div');
     menu.id = 'fm-context-menu';
     menu.style.left = `${e.clientX}px`;
     menu.style.top = `${e.clientY}px`;
-    
+
     // Change Color Option
     const colorItem = document.createElement('div');
     colorItem.className = 'ctx-item';
-    
+
     const input = document.createElement('input');
     input.type = 'color';
     input.className = 'ctx-color-picker';
-    
+
     // Set current value
     const folderColors = JSON.parse(localStorage.getItem('folderColors') || '{}');
     input.value = folderColors[item.id] || '#5D9CEC';
-    
+
     input.addEventListener('input', (ev) => {
         const colors = JSON.parse(localStorage.getItem('folderColors') || '{}');
         colors[item.id] = ev.target.value;
         localStorage.setItem('folderColors', JSON.stringify(colors));
         loadFolder(currentFolderId); // Re-render to show change
     });
-    
+
     // Prevent menu closing when clicking the input
     input.addEventListener('click', (ev) => ev.stopPropagation());
 
@@ -530,7 +615,7 @@ function handleContextMenu(e, item) {
     colorItem.appendChild(input);
     colorItem.appendChild(label);
     menu.appendChild(colorItem);
-    
+
     // Reset Option (only if specific color is set)
     if (folderColors[item.id]) {
         const resetItem = document.createElement('div');
@@ -549,10 +634,11 @@ function handleContextMenu(e, item) {
 }
 
 // Function to load full-size background image from Pinterest board
-function loadPinterestGallery() {
+async function loadPinterestGallery(collectionKey) {
+
     const gallery = document.getElementById('pinterest-gallery');
     if (!gallery) return;
-    
+
     const collectionsData = getCollections();
     const activeCollectionKey = collectionsData.active;
     const imageList = collectionsData.collections[activeCollectionKey] || [];
@@ -564,44 +650,43 @@ function loadPinterestGallery() {
         gallery.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
         return;
     }
-    
+
     // Pick a random image
     const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
-    
+
     // Create single full-size background image
     const img = document.createElement('img');
     img.src = randomImage;
     img.alt = 'Background image';
-    
-    // Add error handler to fallback to a gradient if image fails
-    img.onerror = function() {
+
+    img.onerror = function () {
         console.warn('Failed to load background image, using gradient fallback');
         gallery.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
     };
-    
+
     // Add load handler to confirm image loaded
-    img.onload = function() {
+    img.onload = function () {
         console.log('Background image loaded successfully');
     };
-    
+
     gallery.appendChild(img);
 }
 
-function handleImageUpload(collectionKey) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.multiple = true;
-    input.onchange = (e) => {
-        const files = e.target.files;
-        for (const file of files) {
-            const reader = new FileReader();
-            reader.onload = (event) => addImageToCollection(collectionKey, event.target.result);
-            reader.readAsDataURL(file);
-        }
-    };
-    input.click();
-}
+// function handleImageUpload(collectionKey) {
+//     const input = document.createElement('input');
+//     input.type = 'file';
+//     input.accept = 'image/*';
+//     input.multiple = true;
+//     input.onchange = (e) => {
+//         const files = e.target.files;
+//         for (const file of files) {
+//             const reader = new FileReader();
+//             reader.onload = (event) => addImageToCollection(collectionKey, event.target.result);
+//             reader.readAsDataURL(file);
+//         }
+//     };
+//     input.click();
+// }
 // --- Collections System ---
 
 const MAX_COLLECTIONS = 100000;
@@ -702,7 +787,7 @@ function renderCollectionsList() {
             loadPinterestGallery(); // Reload background
         });
     });
-    
+
     body.querySelectorAll('.delete-collection-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const key = e.target.closest('.collection-item').dataset.key;
@@ -718,7 +803,7 @@ function renderCollectionsList() {
             }
         });
     });
-    
+
     // Note: Upload functionality is complex and requires a file input handler.
     // This is a placeholder for where that logic would go.
     body.querySelectorAll('.upload-to-collection-btn').forEach(btn => {
