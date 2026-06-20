@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('File manager root element (.js-file-manager-root) not found.');
     }
-    loadPinterestGallery();
+    loadCollection();
     createHeaderToggles();
     initClock();
     initGreetingEditor();
@@ -28,7 +28,24 @@ function initDb() {
         const request = indexedDB.open(DB_NAME, 1)
 
         request.onupgradeneeded = (e) => {
-            e.target.result.createObjectStore(STORE_NAME, { keyPath: 'name' })
+            const db = e.target.result
+            const store = db.createObjectStore(STORE_NAME, { keyPath: 'name' })
+            store.add({
+                name: 'default',
+                imageUrls: [
+                    'https://i.pinimg.com/1200x/bb/b4/e2/bbb4e2ccf50d3daa72f62bbe9473f283.jpg',
+                    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1920&h=1080&fit=crop&q=80',
+                ]
+            })
         }
 
         request.onsuccess = (e) => { res(e.target.result) }
@@ -101,6 +118,46 @@ async function handleImageUpload(collectionKey) {
     }
 
     input.click()
+}
+
+async function loadCollection(collectionKey) {
+
+    const gallery = document.getElementById('pinterest-gallery');
+    if (!gallery) return;
+
+    const collectionKey = await getCollectionFromDb(collectionKey);
+    if (!collectionKey) {
+        showToast('Collection does not exist. Using gradient fallback')
+        gallery.style.background = 'linear-gradient(135deg, #717db2ff 0%, #764ba2 100%)';
+        return;
+    }
+
+    const imageList = collectionKey.blobs
+
+    if (imageList.length === 0) {
+        console.warn(`Active collection "${activeCollectionKey}" is empty. Using gradient fallback.`);
+        gallery.style.background = 'linear-gradient(135deg, #717db2ff 0%, #764ba2 100%)';
+        return;
+    }
+
+    gallery.innerHTML = ''; // Clear previous background image
+
+    const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
+
+    const img = document.createElement('img');
+    img.src = randomImage;
+    img.alt = 'Background image';
+
+    img.onerror = function () {
+        console.warn('Failed to load background image, using gradient fallback');
+        gallery.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    };
+
+    img.onload = function () {
+        console.log('Background image loaded successfully');
+    };
+
+    gallery.appendChild(img);
 }
 
 function initClock() {
@@ -633,90 +690,9 @@ function handleContextMenu(e, item) {
     document.body.appendChild(menu);
 }
 
-// Function to load full-size background image from Pinterest board
-async function loadPinterestGallery(collectionKey) {
 
-    const gallery = document.getElementById('pinterest-gallery');
-    if (!gallery) return;
-
-    const collectionsData = getCollections();
-    const activeCollectionKey = collectionsData.active;
-    const imageList = collectionsData.collections[activeCollectionKey] || [];
-
-    gallery.innerHTML = ''; // Clear previous background image
-
-    if (imageList.length === 0) {
-        console.warn(`Active collection "${activeCollectionKey}" is empty. Using gradient fallback.`);
-        gallery.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        return;
-    }
-
-    // Pick a random image
-    const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
-
-    // Create single full-size background image
-    const img = document.createElement('img');
-    img.src = randomImage;
-    img.alt = 'Background image';
-
-    img.onerror = function () {
-        console.warn('Failed to load background image, using gradient fallback');
-        gallery.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-    };
-
-    // Add load handler to confirm image loaded
-    img.onload = function () {
-        console.log('Background image loaded successfully');
-    };
-
-    gallery.appendChild(img);
-}
-
-// function handleImageUpload(collectionKey) {
-//     const input = document.createElement('input');
-//     input.type = 'file';
-//     input.accept = 'image/*';
-//     input.multiple = true;
-//     input.onchange = (e) => {
-//         const files = e.target.files;
-//         for (const file of files) {
-//             const reader = new FileReader();
-//             reader.onload = (event) => addImageToCollection(collectionKey, event.target.result);
-//             reader.readAsDataURL(file);
-//         }
-//     };
-//     input.click();
-// }
-// --- Collections System ---
 
 const MAX_COLLECTIONS = 100000;
-
-function getCollections() {
-    const defaults = {
-        active: 'original',
-        collections: {
-            original: [
-                'https://i.pinimg.com/1200x/bb/b4/e2/bbb4e2ccf50d3daa72f62bbe9473f283.jpg',
-                'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1920&h=1080&fit=crop&q=80',
-            ]
-        }
-    };
-    const stored = localStorage.getItem('imageCollections');
-    return stored ? JSON.parse(stored) : defaults;
-}
-
-function saveCollections(data) {
-    localStorage.setItem('imageCollections', JSON.stringify(data));
-}
 
 function openCollectionsPanel() {
     if (document.getElementById('collections-panel')) return;
@@ -784,7 +760,7 @@ function renderCollectionsList() {
             data.active = key;
             saveCollections(data);
             renderCollectionsList();
-            loadPinterestGallery(); // Reload background
+            loadCollection(); // Reload background
         });
     });
 
@@ -799,7 +775,7 @@ function renderCollectionsList() {
                 }
                 saveCollections(data);
                 renderCollectionsList();
-                loadPinterestGallery();
+                loadCollection();
             }
         });
     });
@@ -835,7 +811,7 @@ function addImageToCollection(key, imageDataUrl) {
         saveCollections(data);
         // If the updated collection is the active one, reload the background to potentially show the new image
         if (data.active === key) {
-            loadPinterestGallery();
+            loadCollection();
         }
     }
 }
