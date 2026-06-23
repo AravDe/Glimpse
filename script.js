@@ -54,7 +54,20 @@ function initDb() {
     });
 }
 
-async function getCollectionFromDb(collectionName) {
+async function getAllCollections(collection) {
+    const db = await initDb()
+
+    return new Promise((res, rej) => {
+        const transaction = db.transaction([STORE_NAME], "readonly")
+        const store = transaction.objectStore(STORE_NAME)
+        const request = store.getAll()
+
+        request.onsuccess = (e) => { res(e.target.result) }
+        request.onerror = (e) => { rej(e.target.error) }
+    })
+}
+
+async function getCollection(collectionName) {
     const db = await initDb()
 
     return new Promise((res, rej) => {
@@ -80,7 +93,7 @@ async function saveCollectionToDb(collectionObj) {
     })
 }
 
-async function deleteCollectionFromDb(collectionName) {
+async function deleteCollection(collectionName) {
     const db = await initDb()
 
     return new Promise((res, rej) => {
@@ -102,10 +115,10 @@ async function handleImageUpload(collectionKey) {
 
     input.onchange = async (e) => {
 
-        const collection = await getCollectionFromDb(collectionKey)
+        const collection = await getCollection(collectionKey)
         const files = e.target.files
 
-        if (collection.blobs.length + files.length > MAX_IMAGES_PER_COLLECTION) {
+        if ((collection.blobs || []).length + files.length > MAX_IMAGES_PER_COLLECTION) {
             alert('Too many images!')
             return
         }
@@ -125,27 +138,32 @@ async function loadCollection(collectionKey) {
     const gallery = document.getElementById('pinterest-gallery');
     if (!gallery) return;
 
-    const collectionKey = await getCollectionFromDb(collectionKey);
-    if (!collectionKey) {
-        showToast('Collection does not exist. Using gradient fallback')
-        gallery.style.background = 'linear-gradient(135deg, #717db2ff 0%, #764ba2 100%)';
-        return;
+    let collection = await getCollection(collectionKey)
+
+    if (!collection) {
+        showToast('Collection does not exist... reverting to default')
+        collection = await getCollection('default')
     }
 
-    const imageList = collectionKey.blobs
+    const imageList = [...(collection.imageUrls || []), ...(collection.blobs || [])]
+
 
     if (imageList.length === 0) {
-        console.warn(`Active collection "${activeCollectionKey}" is empty. Using gradient fallback.`);
+        showToast(`Active collection "${collection.name}" is empty. Using gradient fallback.`);
         gallery.style.background = 'linear-gradient(135deg, #717db2ff 0%, #764ba2 100%)';
         return;
     }
 
     gallery.innerHTML = ''; // Clear previous background image
 
-    const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
+    let index = parseInt(localStorage.getItem('imageIndex') || '0')
+
+    if (index >= imagelist.length) { index = 0 }
+
+    const currImg = imageList[Math.floor(Math.random() * imageList.length)];
 
     const img = document.createElement('img');
-    img.src = randomImage;
+    img.src = typeof currImg === 'string' ? currImg : URL.createObjectURL(currImg);
     img.alt = 'Background image';
 
     img.onerror = function () {
@@ -722,23 +740,24 @@ function openCollectionsPanel() {
     });
 }
 
-function renderCollectionsList() {
+async function renderCollectionsList() {
     const body = document.querySelector('.collections-body');
     if (!body) return;
 
-    const data = getCollections();
+    const data = await getAllCollections();
     body.innerHTML = '';
 
-    Object.keys(data.collections).forEach(key => {
+    dataforEach(collection => {
+        const key = collection.name
         const item = document.createElement('div');
         item.className = 'collection-item';
         item.dataset.key = key;
-        if (data.active === key) {
+        if (localStorage.getItem('activeCollectionKey') === key) {
             item.classList.add('active');
         }
 
         let controls = '';
-        if (key !== 'original') {
+        if (key !== 'default') {
             controls = `
                 <div class="collection-controls">
                     <button class="upload-to-collection-btn" title="Add Images"><i class="fa-solid fa-upload"></i></button>
@@ -753,29 +772,22 @@ function renderCollectionsList() {
 
     // Add event listeners after rendering
     body.querySelectorAll('.collection-item').forEach(el => {
-        el.addEventListener('click', (e) => {
+        el.addEventListener('click', async (e) => {
             if (e.target.closest('.collection-controls')) return;
             const key = el.dataset.key;
-            const data = getCollections();
-            data.active = key;
-            saveCollections(data);
-            renderCollectionsList();
-            loadCollection(); // Reload background
+            localStorage.setItem("activeCollectionKey", key);
+            await renderCollectionsList();
+            loadCollection(key); // Reload background
         });
     });
 
     body.querySelectorAll('.delete-collection-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
             const key = e.target.closest('.collection-item').dataset.key;
             if (confirm(`Are you sure you want to delete the "${key}" collection?`)) {
-                const data = getCollections();
-                delete data.collections[key];
-                if (data.active === key) {
-                    data.active = 'original'; // Fallback to original
-                }
-                saveCollections(data);
-                renderCollectionsList();
-                loadCollection();
+                await deleteCollection(key)
+                await renderCollectionsList();
+                loadCollection('default');
             }
         });
     });
