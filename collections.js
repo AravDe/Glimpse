@@ -7,41 +7,28 @@ const MAX_IMAGES_PER_COLLECTION = 10
 
 function initDb() {
     return new Promise((res, rej) => {
-        const request = indexedDB.open(DB_NAME, 2)
-
-        const defaultCollection = {
-            name: 'default',
-            imageUrls: [
-                'https://i.pinimg.com/1200x/bb/b4/e2/bbb4e2ccf50d3daa72f62bbe9473f283.jpg',
-                'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=1920&h=1080&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1920&h=1080&fit=crop&q=80',
-            ],
-            blobs: []
-        }
+        const request = indexedDB.open(DB_NAME, 1)
 
         request.onupgradeneeded = (e) => {
             const db = e.target.result
-            const { oldVersion } = e
-
-            if (oldVersion < 1) {
-                // Fresh install — create the store and seed default
-                const store = db.createObjectStore(STORE_NAME, { keyPath: 'name' })
-                store.add(defaultCollection)
-            }
-
-            if (oldVersion >= 1 && oldVersion < 2) {
-                // Existing user upgrading — seed default if missing
-                const store = e.target.transaction.objectStore(STORE_NAME)
-                store.add(defaultCollection)
-            }
+            const store = db.createObjectStore(STORE_NAME, { keyPath: 'name' })
+            store.add({
+                name: 'default',
+                imageUrls: [
+                    'https://i.pinimg.com/1200x/bb/b4/e2/bbb4e2ccf50d3daa72f62bbe9473f283.jpg',
+                    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=1920&h=1080&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1920&h=1080&fit=crop&q=80',
+                ],
+                blobs: []
+            })
         }
 
         request.onsuccess = (e) => { res(e.target.result) }
