@@ -5,9 +5,6 @@
     "description": "I made a custom homepage for my brave browser to easily be able to access tab groups, bookmarks, etc",
     "permissions": [
         "bookmarks",
-        "history",
-        "tabGroups",
-        "tabs",
         "topSites",
         "unlimitedStorage"
     ],
