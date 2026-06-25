@@ -1,6 +1,6 @@
-# CustomBrowserHomepage - Browser Extension
+# Glimpse - Browser Extension
 
-A Chrome/Brave browser extension that replaces the new tab page with a beautiful and functional bookmark manager.
+A Chrome/Brave browser extension that replaces the new tab page with a functional bookmark manager and gives the user ability to set their own browser background.
 
 ![Demo video](Demo_media/Demo_Homepage.gif)
 
