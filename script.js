@@ -135,19 +135,28 @@ function createHeaderToggles() {
     visibilityBtn.className = 'header-toggle-btn';
     visibilityBtn.title = 'Hide Bookmarks';
 
-    const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-    const eyeOffIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-    visibilityBtn.innerHTML = eyeIcon;
+    const fileIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>`;
+    const fileOffIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
-    visibilityBtn.addEventListener('click', () => {
+    const applyVisibility = (isVisible) => {
         const fmSection = document.getElementById('file-manager-section');
         if (fmSection) {
-            const isVisible = fmSection.style.display !== 'none';
-            fmSection.style.display = isVisible ? 'none' : 'flex';
-            visibilityBtn.innerHTML = isVisible ? eyeOffIcon : eyeIcon;
-            visibilityBtn.title = isVisible ? 'Show Bookmarks' : 'Hide Bookmarks';
+            fmSection.style.display = isVisible ? 'flex' : 'none';
         }
+        visibilityBtn.innerHTML = isVisible ? fileIcon : fileOffIcon;
+        visibilityBtn.title = isVisible ? 'Hide Bookmarks' : 'Show Bookmarks';
+    };
+
+    visibilityBtn.addEventListener('click', () => {
+        const currentlyVisible = localStorage.getItem('bookmarksVisible') !== 'false';
+        const newVisibility = !currentlyVisible;
+        localStorage.setItem('bookmarksVisible', newVisibility);
+        applyVisibility(newVisibility);
     });
+
+    const savedVisibility = localStorage.getItem('bookmarksVisible') !== 'false';
+    applyVisibility(savedVisibility);
+
     container.appendChild(visibilityBtn);
 
     // Theme Toggle

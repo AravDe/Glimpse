@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Arav's Dashboard",
+    "name": "Glimpse",
     "version": "1.0",
-    "description": "I made a custom homepage for my brave browser to easily be able to access tab groups, bookmarks, etc",
+    "description": "I made a custom homepage for my browser. There is a file explorer style bookmark management system and you can upload your set of backgrounds for your browser homescreen",
     "permissions": [
         "bookmarks",
         "topSites",
@@ -10,5 +10,10 @@
     ],
     "chrome_url_overrides": {
         "newtab": "homepage.html"
+    },
+    "icons": {
+        "16": "Icon/GlimpseIcon.png",
+        "48": "Icon/GlimpseIcon.png",
+        "128": "Icon/GlimpseIcon.png"
     }
 }

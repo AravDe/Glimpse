@@ -121,7 +121,6 @@ async function handleImageUpload(collectionKey) {
 // --- Shared UI Utility ---
 
 function showToast(message) {
-    alert(message)
     const toast = document.createElement('div')
     toast.textContent = message
     toast.style.cssText = `
